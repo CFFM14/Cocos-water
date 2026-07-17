@@ -5,7 +5,8 @@
       "Bash(git commit -m '倒水解谜游戏 - 完整项目 *)",
       "Bash(git remote *)",
       "Bash(git push *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git commit -m '瓶子美化：瓶口+圆角瓶身+水柱一体+气泡波纹光斑特效 *)"
     ]
   }
 }

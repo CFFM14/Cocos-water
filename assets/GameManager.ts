@@ -110,8 +110,8 @@ export class GameManager extends Component {
         const { bottlesTotal, maxLayers } = this.currentLevel;
 
         const cols = Math.ceil(Math.sqrt(bottlesTotal));
-        const spacingX = 150;
-        const spacingY = 250;
+        const spacingX = 160;
+        const spacingY = 260;
         const startX = -((cols - 1) * spacingX) / 2;
         const startY = 200;
 
@@ -333,8 +333,8 @@ export class GameManager extends Component {
 
         // 按当前瓶子数量，接在网格后面排列
         const cols = Math.ceil(Math.sqrt(this.bottles.length + 1));
-        const spacingX = 150;
-        const spacingY = 250;
+        const spacingX = 160;
+        const spacingY = 260;
         const startX = -((cols - 1) * spacingX) / 2;
         const startY = 200;
 
