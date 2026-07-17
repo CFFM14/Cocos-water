@@ -270,8 +270,8 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 0,
-      "g": 71,
+      "r": 10,
+      "g": 245,
       "b": 255,
       "a": 255
     },
@@ -377,6 +377,7 @@
       "__id__": 0
     },
     "fileId": "67MCEIbZ5E1o/0bMdaSoWS",
+    "instance": null,
     "targetOverrides": null
   }
 ]

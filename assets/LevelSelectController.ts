@@ -72,8 +72,8 @@ export class LevelSelectController extends Component {
         const end = Math.min(start + LevelSelectController.LEVELS_PER_PAGE, LEVELS.length);
 
         // 排列参数：4列 x 3行，按钮间距
-        const spacingX = 120;
-        const spacingY = 120;
+        const spacingX = 150;
+        const spacingY = 150;
         const cols = LevelSelectController.COLS;
         const startX = -((cols - 1) * spacingX) / 2;
         const startY = 80; // 第一行 Y 坐标

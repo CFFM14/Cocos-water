@@ -17,9 +17,7 @@ export class Bottle extends Component {
     private graphics: Graphics | null = null;
 
     onLoad() {
-        // 添加 Graphics 组件用来画图
         this.graphics = this.node.addComponent(Graphics);
-        // 设置节点大小
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform) {
             uiTransform.setContentSize(this.bottleWidth, this.bottleHeight);
@@ -48,7 +46,7 @@ export class Bottle extends Component {
             g.fill();
         }
 
-        // 2. 画瓶子边框（透明玻璃感）
+        // 2. 画瓶子边框
         g.strokeColor = Color.WHITE;
         g.lineWidth = 4;
         g.roundRect(x, y, this.bottleWidth, this.bottleHeight, 10);
@@ -93,32 +91,10 @@ export class Bottle extends Component {
         return count;
     }
 
-    /**
-     * 判断瓶子是否为空
-     */
-    public isEmpty(): boolean {
-        return this.waterLayers.length === 0;
-    }
+    public isEmpty(): boolean { return this.waterLayers.length === 0; }
+    public isFull(): boolean { return this.waterLayers.length >= this.maxLayers; }
+    public getEmptySpace(): number { return this.maxLayers - this.waterLayers.length; }
 
-    /**
-     * 判断瓶子是否已满
-     */
-    public isFull(): boolean {
-        return this.waterLayers.length >= this.maxLayers;
-    }
-
-    /**
-     * 获取剩余的可用空间
-     */
-    public getEmptySpace(): number {
-        return this.maxLayers - this.waterLayers.length;
-    }
-
-    /**
-     * 从顶部添加颜色（倒水进来）
-     * @param color 颜色名
-     * @param count 层数
-     */
     public addWater(color: string, count: number) {
         for (let i = 0; i < count; i++) {
             if (this.waterLayers.length < this.maxLayers) {
@@ -128,10 +104,6 @@ export class Bottle extends Component {
         this.draw();
     }
 
-    /**
-     * 从顶部移除指定层数的水（倒水出去）
-     * @param count 层数
-     */
     public removeWater(count: number) {
         for (let i = 0; i < count; i++) {
             if (this.waterLayers.length > 0) {
@@ -141,15 +113,10 @@ export class Bottle extends Component {
         this.draw();
     }
 
-    /**
-     * 检查能否将来源瓶子的水倒入当前瓶子
-     */
     public canPourFrom(source: Bottle): boolean {
         if (source.isEmpty()) return false;
         if (this.isFull()) return false;
-        if (this.isEmpty()) return true; // 空瓶可以接收任何颜色
-
-        // 非空时，顶层颜色必须相同
+        if (this.isEmpty()) return true;
         return source.getTopColor() === this.getTopColor();
     }
 }
