@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate, Vec3, EventTouch, director, Button, Label, Graphics, Color } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, Vec3, EventTouch, director, Button, Label, Graphics, Color, AudioClip, AudioSource } from 'cc';
 import { Bottle } from './Bottle';
 import { LevelData, LEVELS } from './LevelConfig';
 import { GameData } from './GameData';
@@ -55,9 +55,13 @@ export class GameManager extends Component {
     private currentLevel: LevelData | null = null;
     private undoStack: string[][][] = [];
     private addedBottleCount: number = 0;
+    @property(AudioClip)
+    pourSound: AudioClip = null!;
+
     private isAnimating: boolean = false;
     private activePour: PourAnim | null = null;
     private streamGraphics: Graphics | null = null;
+    private audioSource: AudioSource | null = null;
 
     start() {
         if (this.winPanel) {
@@ -80,6 +84,11 @@ export class GameManager extends Component {
         }
         if (this.addBtn) {
             this.addBtn.node.on(Button.EventType.CLICK, this.onAddBottle, this);
+        }
+
+        this.audioSource = this.node.getComponent(AudioSource);
+        if (!this.audioSource) {
+            this.audioSource = this.node.addComponent(AudioSource);
         }
 
         const streamNode = new Node('PourStream');
@@ -223,14 +232,23 @@ export class GameManager extends Component {
 
     private getStreamColor(name: string): Color {
         switch (name) {
-            case 'red':    return new Color(220, 60, 60);
-            case 'blue':   return new Color(60, 120, 220);
-            case 'green':  return new Color(60, 180, 80);
-            case 'yellow': return new Color(240, 200, 40);
-            case 'purple': return new Color(160, 80, 200);
-            case 'cyan':   return new Color(60, 200, 200);
-            case 'orange': return new Color(240, 150, 50);
-            default:       return new Color(255, 255, 255);
+            case 'red':     return new Color(220, 60, 60);
+            case 'blue':    return new Color(60, 120, 220);
+            case 'green':   return new Color(60, 180, 80);
+            case 'yellow':  return new Color(240, 200, 40);
+            case 'purple':  return new Color(160, 80, 200);
+            case 'cyan':    return new Color(60, 200, 200);
+            case 'orange':  return new Color(240, 150, 50);
+            case 'pink':    return new Color(255, 150, 180);
+            case 'brown':   return new Color(150, 100, 60);
+            case 'hotpink': return new Color(255, 80, 140);
+            case 'gray':    return new Color(140, 140, 150);
+            case 'lime':    return new Color(180, 240, 60);
+            case 'teal':    return new Color(40, 160, 150);
+            case 'navy':    return new Color(30, 50, 120);
+            case 'magenta': return new Color(220, 50, 140);
+            case 'silver':  return new Color(200, 200, 210);
+            default:        return new Color(255, 255, 255);
         }
     }
 
@@ -288,8 +306,24 @@ export class GameManager extends Component {
 
     private fillBottlesRandomly() {
         if (!this.currentLevel) return;
-        const { colors, bottlesTotal, maxLayers, extraEmptyBottles } = this.currentLevel;
+        const { bottlesTotal, maxLayers, extraEmptyBottles } = this.currentLevel;
+        const level = this.currentLevel as any;
 
+        // 如果有预置 tube 数据，直接使用
+        if (level.tubes) {
+            const tubeData: string[][] = level.tubes;
+            for (let i = 0; i < tubeData.length; i++) {
+                const bottleComp = this.bottles[i].getComponent(Bottle);
+                if (bottleComp) {
+                    bottleComp.waterLayers = [...tubeData[i]];
+                    bottleComp.draw();
+                }
+            }
+            return;
+        }
+
+        // 否则随机生成
+        const colors: string[] = level.colors;
         const nonEmptyBottles = bottlesTotal - extraEmptyBottles;
         const layers: string[] = [];
 
@@ -363,6 +397,10 @@ export class GameManager extends Component {
                 this.streamGraphics.node.setSiblingIndex(sourceNode.parent!.children.length - 1);
             }
             sourceBottle.showShadow = false;
+
+            if (this.pourSound && this.audioSource) {
+                this.audioSource.playOneShot(this.pourSound, 1);
+            }
 
             this.isAnimating = true;
             this.activePour = {

@@ -1849,7 +1849,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "返回",
+    "_string": "⬅",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 60,
@@ -2763,6 +2763,10 @@
     },
     "addBtn": {
       "__id__": 59
+    },
+    "pourSound": {
+      "__uuid__": "10bbf4b2-16a6-4d56-959d-2e975ab4d852",
+      "__expectedType__": "cc.AudioClip"
     },
     "_id": "619gPu/glC3pR3lgVW8F2c"
   },

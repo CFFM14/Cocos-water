@@ -7,7 +7,9 @@
       "Bash(git push *)",
       "Bash(git commit *)",
       "Bash(git commit -m '瓶子美化：瓶口+圆角瓶身+水柱一体+气泡波纹光斑特效 *)",
-      "Bash(git commit -m '倒水动画系统：瓶子飞行+水流+水面平滑变化+阴影控制 *)"
+      "Bash(git commit -m '倒水动画系统：瓶子飞行+水流+水面平滑变化+阴影控制 *)",
+      "Bash(node -e ' *)",
+      "Bash(git commit -m '240关预设关卡+倒水动画+音效+新颜色系统 *)"
     ]
   }
 }

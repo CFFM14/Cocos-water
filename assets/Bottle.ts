@@ -400,14 +400,23 @@ export class Bottle extends Component {
 
     private getColorByName(name: string): Color {
         switch (name) {
-            case 'red':    return new Color(220, 60, 60);
-            case 'blue':   return new Color(60, 120, 220);
-            case 'green':  return new Color(60, 180, 80);
-            case 'yellow': return new Color(240, 200, 40);
-            case 'purple': return new Color(160, 80, 200);
-            case 'cyan':   return new Color(60, 200, 200);
-            case 'orange': return new Color(240, 150, 50);
-            default:       return Color.WHITE;
+            case 'red':     return new Color(220, 60, 60);
+            case 'blue':    return new Color(60, 120, 220);
+            case 'green':   return new Color(60, 180, 80);
+            case 'yellow':  return new Color(240, 200, 40);
+            case 'purple':  return new Color(160, 80, 200);
+            case 'cyan':    return new Color(60, 200, 200);
+            case 'orange':  return new Color(240, 150, 50);
+            case 'pink':    return new Color(255, 150, 180);
+            case 'brown':   return new Color(150, 100, 60);
+            case 'hotpink': return new Color(255, 80, 140);
+            case 'gray':    return new Color(140, 140, 150);
+            case 'lime':    return new Color(180, 240, 60);
+            case 'teal':    return new Color(40, 160, 150);
+            case 'navy':    return new Color(30, 50, 120);
+            case 'magenta': return new Color(220, 50, 140);
+            case 'silver':  return new Color(200, 200, 210);
+            default:        return Color.WHITE;
         }
     }
 

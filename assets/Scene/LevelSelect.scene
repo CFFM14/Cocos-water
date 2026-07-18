@@ -524,8 +524,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 2.988,
-      "y": -597.403,
+      "x": -4.667,
+      "y": -556.58,
       "z": 0
     },
     "_lrot": {
@@ -563,7 +563,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 102.24609375,
+      "width": 120,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -588,8 +588,8 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
+      "r": 0,
+      "g": 143,
       "b": 255,
       "a": 255
     },
@@ -602,8 +602,11 @@
     "_lineHeight": 40,
     "_overflow": 0,
     "_enableWrapText": true,
-    "_font": null,
-    "_isSystemFontUsed": true,
+    "_font": {
+      "__uuid__": "4df9004f-3f13-480e-a3d8-0d8305456cd8",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_isSystemFontUsed": false,
     "_spacingX": 0,
     "_isItalic": false,
     "_isBold": false,
@@ -1483,11 +1486,11 @@
       "b": 0,
       "a": 255
     },
-    "_string": "返回",
+    "_string": "⬅",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 45,
-    "_fontSize": 45,
+    "_actualFontSize": 80,
+    "_fontSize": 80,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
     "_overflow": 1,
