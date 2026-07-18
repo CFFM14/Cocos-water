@@ -38,6 +38,14 @@ export class Bottle extends Component {
     private bubbles: Bubble[] = [];
     private lightSpots: LightSpot[] = [];
 
+    // 倒水动画状态（由 GameManager 设置）
+    public showShadow: boolean = true;       // 是否画阴影（倒水时隐藏）
+    public pourOutCount: number = 0;         // 正在倒出的总层数
+    public pourOutProgress: number = 0;      // 倒出进度 0~1
+    public pourInColor: string | null = null; // 正在接收的颜色
+    public pourInCount: number = 0;          // 接收的总层数
+    public pourInProgress: number = 0;       // 接收进度 0~1
+
     onLoad() {
         this.graphics = this.node.getComponent(Graphics);
         if (!this.graphics) {
@@ -132,10 +140,12 @@ export class Bottle extends Component {
         const bodyWidth = this.bottleWidth - 12;
         const bodyHeight = bodyTopY - bodyBottomY;
 
-        // 阴影
-        g.fillColor = new Color(0, 0, 0, 40);
-        g.ellipse(0, bodyBottomY - 8, this.bottleWidth * 0.5, 8);
-        g.fill();
+        // 阴影（倒水时隐藏）
+        if (this.showShadow) {
+            g.fillColor = new Color(0, 0, 0, 40);
+            g.ellipse(0, bodyBottomY - 8, this.bottleWidth * 0.5, 8);
+            g.fill();
+        }
 
         // 水绘制区域
         const waterLeft = bodyLeft + 3.2;
@@ -143,8 +153,17 @@ export class Bottle extends Component {
         const waterWidth = waterRight - waterLeft;
         const waterStartY = bodyBottomY + this.paddingBottom - this.layerHeight * 0.5;
 
-        if (this.waterLayers.length > 0) {
-            const totalWaterHeight = this.waterLayers.length * this.layerHeight;
+        // 计算动画中的有效水高
+        let effectiveLayers = this.waterLayers.length;
+        if (this.pourOutCount > 0) {
+            effectiveLayers -= this.pourOutCount * this.pourOutProgress;
+        }
+        if (this.pourInColor && this.pourInCount > 0) {
+            effectiveLayers += this.pourInCount * this.pourInProgress;
+        }
+        const totalWaterHeight = effectiveLayers * this.layerHeight;
+
+        if (totalWaterHeight > 0) {
 
             // 液体主体（层间平滑过渡）
             this.drawLiquidBody(g, waterLeft, waterRight, waterStartY, totalWaterHeight);
@@ -216,6 +235,46 @@ export class Bottle extends Component {
             g.fillColor = new Color(255, 255, 255, 15);
             g.roundRect(waterLeft, waterStartY + 1, waterWidth, totalWaterHeight - 2, 4);
             g.fill();
+
+            // 水面水平校正（倾斜时顶部加斜面模拟水平面）
+            const bottleAngle = this.node.angle;
+            if (Math.abs(bottleAngle) > 1 && this.waterLayers.length > 0) {
+                const topY = waterStartY + totalWaterHeight;
+                const slant = Math.sin(bottleAngle * Math.PI / 180) * 6;
+                const lastColor = this.getColorByName(this.waterLayers[this.waterLayers.length - 1]);
+                g.fillColor = lastColor;
+                g.moveTo(waterLeft, topY);
+                g.lineTo(waterRight, topY);
+                g.lineTo(waterRight, topY + slant);
+                g.lineTo(waterLeft, topY - slant);
+                g.close();
+                g.fill();
+            }
+
+            // 接收水动画：画接收中的多层水
+            if (this.pourInColor && this.pourInCount > 0 && this.pourInProgress > 0) {
+                const inColor = this.getColorByName(this.pourInColor);
+                const totalIn = this.pourInCount * this.pourInProgress;
+                const fullLayers = Math.floor(totalIn);
+                const fracLayer = totalIn - fullLayers;
+
+                // 先画完整的接收层
+                for (let j = 0; j < fullLayers; j++) {
+                    const ly = waterStartY + (this.waterLayers.length + j) * this.layerHeight;
+                    g.fillColor = inColor;
+                    g.rect(waterLeft, ly, waterWidth, this.layerHeight);
+                    g.fill();
+                }
+
+                // 再画部分层
+                if (fracLayer > 0.001) {
+                    const ly = waterStartY + (this.waterLayers.length + fullLayers) * this.layerHeight;
+                    const inH = this.layerHeight * fracLayer;
+                    g.fillColor = inColor;
+                    g.rect(waterLeft, ly, waterWidth, inH);
+                    g.fill();
+                }
+            }
         }
 
         // === 瓶身和瓶口（画在水上面，遮住水层边角） ===
@@ -241,15 +300,16 @@ export class Bottle extends Component {
     }
 
     /** 一体化的液体，层间平滑过渡 */
-    private drawLiquidBody(g: Graphics, left: number, right: number, baseY: number, _totalHeight: number) {
+    private drawLiquidBody(g: Graphics, left: number, right: number, baseY: number, totalH: number) {
         if (this.waterLayers.length === 0) return;
 
         const width = right - left;
         const transitionHeight = 6;
+        const maxY = baseY + totalH; // 水面最高点（动画生效处）
 
-        // 整体暗色底边（模拟液体折射暗边），小圆角让底部不突兀
+        // 整体暗色底边
         g.fillColor = new Color(0, 0, 0, 10);
-        g.roundRect(left, baseY, width, _totalHeight, 4);
+        g.roundRect(left, baseY, width, totalH, 4);
         g.fill();
 
         let currentY = baseY;
@@ -258,8 +318,13 @@ export class Bottle extends Component {
             const colorName = this.waterLayers[i];
             const baseColor = this.getColorByName(colorName);
             const layerTopY = baseY + (i + 1) * this.layerHeight;
+            if (layerTopY <= currentY) continue; // 本层完全在底部以下，跳过
+            if (currentY >= maxY) break; // 已经画到水面，停止
+
             const isLastLayer = (i === this.waterLayers.length - 1);
-            const solidTopY = isLastLayer ? layerTopY : layerTopY - transitionHeight;
+            let solidTopY = isLastLayer ? layerTopY : layerTopY - transitionHeight;
+            // 裁剪到水面高度
+            if (solidTopY > maxY) solidTopY = maxY;
 
             // 纯色矩形
             if (solidTopY > currentY) {
@@ -277,12 +342,13 @@ export class Bottle extends Component {
                 }
             }
 
-            // 层间过渡渐变
-            if (!isLastLayer) {
+            // 层间过渡渐变（裁剪到水面）
+            if (!isLastLayer && solidTopY < maxY) {
                 const nextColor = this.getColorByName(this.waterLayers[i + 1]);
-                const steps = Math.max(2, transitionHeight);
+                const steps = Math.min(transitionHeight, Math.max(2, maxY - solidTopY));
                 for (let step = 0; step < steps; step++) {
-                    const t = step / (steps - 1);
+                    if (solidTopY + step >= maxY) break;
+                    const t = step / (transitionHeight - 1);
                     const r = baseColor.r + (nextColor.r - baseColor.r) * t;
                     const gv = baseColor.g + (nextColor.g - baseColor.g) * t;
                     const b = baseColor.b + (nextColor.b - baseColor.b) * t;
@@ -292,7 +358,8 @@ export class Bottle extends Component {
                 }
             }
 
-            currentY = layerTopY;
+            currentY = Math.min(layerTopY, maxY);
+            if (currentY >= maxY) break;
         }
     }
 
@@ -358,6 +425,17 @@ export class Bottle extends Component {
             else break;
         }
         return count;
+    }
+
+    /** 获取水面世界 Y 坐标（供水流定位） */
+    public getWaterSurfaceWorldY(): number {
+        const offsetY = 10;
+        const bby = -this.bottleHeight / 2 + offsetY;
+        const wsY = bby + this.paddingBottom - this.layerHeight * 0.5;
+        let layers = this.waterLayers.length;
+        if (this.pourInColor) layers += this.pourInCount * this.pourInProgress;
+        if (this.pourOutCount > 0) layers -= this.pourOutCount * this.pourOutProgress;
+        return this.node.position.y + wsY + layers * this.layerHeight;
     }
 
     public isEmpty(): boolean { return this.waterLayers.length === 0; }

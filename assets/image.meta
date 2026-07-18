@@ -5,5 +5,10 @@
   "uuid": "ddeedbe0-e875-48f0-bd8e-5b95c430e7c3",
   "files": [],
   "subMetas": {},
-  "userData": {}
+  "userData": {
+    "isBundle": true,
+    "bundleFilterConfig": [],
+    "bundleName": "iamges",
+    "bundleConfigID": "82CjRiAkVG4qUBmDj8nWA6"
+  }
 }
